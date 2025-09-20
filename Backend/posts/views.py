@@ -1,9 +1,14 @@
 from rest_framework import viewsets, permissions
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from django.db.models import Q, Count
 from .models import Post, Comment, Like, Follow
 from .serializers import PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer
 
+@api_view(['GET'])
+def hello_view(request):
+    return Response({"message": "Hello from backend!"})
 # Custom permission: only post author or moderator/admin can delete/update
 class IsAuthorOrModeratorOrAdmin(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):

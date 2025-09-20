@@ -40,11 +40,13 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.facebook',
     'accounts',
     'posts',
+    'corsheaders',
     # add if using django-fernet-fields its package is imported in models directly
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -56,6 +58,9 @@ MIDDLEWARE = [
 
 
 ROOT_URLCONF = 'connectly_backend.urls'
+
+# CORS configuration
+CORS_ALLOW_ALL_ORIGINS = True
 
 TEMPLATES = [
     {
