@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'accounts',
     'posts',
     'corsheaders',
+    'django_extensions',
     # add if using django-fernet-fields its package is imported in models directly
 ]
 
