@@ -25,3 +25,5 @@ types-requests==2.32.4.20250913
 typing_extensions==4.15.0
 urllib3==2.5.0
 webencodings==0.5.1
+django-cors-headers==4.9.0
+django-extensions==4.1 
