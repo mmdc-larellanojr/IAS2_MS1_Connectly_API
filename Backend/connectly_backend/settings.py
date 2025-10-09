@@ -155,9 +155,16 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
+
 # Allauth configuration (basic)
 ACCOUNT_LOGIN_METHODS = {"username", "email"}  # allow login by username or email
-ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+ACCOUNT_SIGNUP_FIELDS = {
+    'username': {'required': True},
+    'email': {'required': True},
+    'password1': {'required': True},
+    'password2': {'required': True},
+}
+
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
