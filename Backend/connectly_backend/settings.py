@@ -171,6 +171,22 @@ SIGNUP_FIELDS = {
     'password2': {'required': True},
 }
 
+# Compatibility shim: some third-party packages still read the older
+# allauth app_settings attributes USERNAME_REQUIRED and EMAIL_REQUIRED.
+# Set them here at startup from SIGNUP_FIELDS so older code continues to
+# work until upstream packages are updated.
+try:
+    # import here (allauth is in INSTALLED_APPS) and set attributes
+    from allauth.account import app_settings as _allauth_app_settings
+
+    # Only set if attributes exist or as new attributes to be safe.
+    _allauth_app_settings.USERNAME_REQUIRED = SIGNUP_FIELDS.get('username', {}).get('required', False)
+    _allauth_app_settings.EMAIL_REQUIRED = SIGNUP_FIELDS.get('email', {}).get('required', False)
+except Exception:
+    # If allauth isn't importable for any reason at settings import time,
+    # skip the shim — Django will error later with a clearer message.
+    pass
+
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
