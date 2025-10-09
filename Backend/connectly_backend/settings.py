@@ -157,8 +157,14 @@ SIMPLE_JWT = {
 
 
 # Allauth configuration (basic)
-ACCOUNT_LOGIN_METHODS = {"username", "email"}  # allow login by username or email
-ACCOUNT_SIGNUP_FIELDS = {
+# Use ACCOUNT_AUTHENTICATION_METHOD to control how users authenticate.
+# 'username_email' allows signing in with either username or email.
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
+
+# Newer allauth/dj-rest-auth use SIGNUP_FIELDS to declare which fields are
+# present on signup and whether they're required. This replaces older
+# ACCOUNT_SIGNUP_FIELDS / USERNAME_REQUIRED / EMAIL_REQUIRED flags.
+SIGNUP_FIELDS = {
     'username': {'required': True},
     'email': {'required': True},
     'password1': {'required': True},
