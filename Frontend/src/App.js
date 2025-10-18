@@ -1,23 +1,32 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import Login from './components/Login';
+import NewsFeed from './components/NewsFeed';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    axios.get(`${process.env.REACT_APP_API_URL}/api/hello/`)
-      .then(response => {
-        setMessage(response.data.message || 'API call successful!');
-      })
-      .catch(error => {
-        setMessage('API call failed.');
-      });
-  }, []);
+  const { isLoggedIn, logout, user } = useAuth();
 
   return (
     <div>
-      <h1>Welcome to React App</h1>
-      <p>{message}</p>
+      <header>
+        <h1>Connectly</h1>
+        {isLoggedIn && (
+          <div>
+            <span>Welcome, {user?.username}</span>
+            <button onClick={logout}>Logout</button>
+          </div>
+        )}
+      </header>
+      <main>
+        <Routes>
+          <Route path="/login" element={isLoggedIn ? <Navigate to="/" /> : <Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<NewsFeed />} />
+          </Route>
+        </Routes>
+      </main>
     </div>
   );
 }
