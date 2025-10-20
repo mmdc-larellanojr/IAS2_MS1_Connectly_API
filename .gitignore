@@ -36,3 +36,20 @@ staticfiles/
 # Env files
 .env
 .env.*
+
+# Frontend
+Frontend/node_modules/
+Frontend/build/
+Frontend/coverage/
+Frontend/npm-debug.log*
+Frontend/yarn-debug.log*
+Frontend/yarn-error.log*
+Frontend/.env.local
+Frontend/.env.development.local
+Frontend/.env.test.local
+Frontend/.env.production.local
+Frontend/.cache/
+
+# Django migrations
+*/migrations/*.py
+!*/migrations/__init__.py
