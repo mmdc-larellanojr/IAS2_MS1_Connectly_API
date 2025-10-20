@@ -1,10 +1,11 @@
-from rest_framework import viewsets, permissions
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import viewsets, permissions
 from django.db.models import Q, Count
+from django.core.exceptions import PermissionDenied
 from .models import Post, Comment, Like, Follow
 from .serializers import PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer
+from .permissions import IsAuthorOrReadOnly
+from rest_framework.decorators import api_view
 
 @api_view(['GET'])
 def hello_view(request):
@@ -52,7 +53,7 @@ class PostViewSet(viewsets.ModelViewSet):
 # Comments
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
@@ -83,7 +84,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 # Likes
 class LikeViewSet(viewsets.ModelViewSet):
     serializer_class = LikeSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAuthorOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user

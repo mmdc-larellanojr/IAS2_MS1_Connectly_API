@@ -2,6 +2,13 @@
 from rest_framework import permissions
 from .models import Follow
 
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    """Write perms: only object owner can edit/delete."""
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.author == request.user
+
 class IsOwnerOrModeratorOrAdmin(permissions.BasePermission):
     """Write perms: only object owner or moderator/admin can edit/delete."""
     def has_object_permission(self, request, view, obj):

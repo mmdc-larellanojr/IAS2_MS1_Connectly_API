@@ -51,7 +51,16 @@ class PostSerializer(serializers.ModelSerializer):
             'likes',
             'comments',
         ]
-        read_only_fields = fields  # everything read-only except content/privacy on create/update
+        read_only_fields = [
+            'id',
+            'author',
+            'created_at',
+            'updated_at',
+            'likes_count',
+            'comments_count',
+            'likes',
+            'comments',
+        ]
 
 
 # Follow Serializer
