@@ -1,22 +1,19 @@
 from pathlib import Path
-from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / '.env')
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 FERNET_KEY = os.environ.get('FERNET_KEY')  # used below in models
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-for-dev")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -39,6 +36,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
     'accounts',
+    'django_ratelimit',  # Rate limiting for API endpoints
     'posts',
     'corsheaders',
     'django_extensions',
@@ -52,8 +50,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # 👈 add this line
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django_ratelimit.middleware.RatelimitMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -61,7 +60,10 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'connectly_backend.urls'
 
 # CORS configuration
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
 
 TEMPLATES = [
     {
@@ -70,6 +72,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -88,6 +91,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# Cache (django-ratelimit requires a supported backend). Use Memcached for dev/prod.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+        'LOCATION': '127.0.0.1:11211',
     }
 }
 
@@ -142,11 +153,16 @@ SITE_ID = 1
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
+
+REST_USE_JWT = True
 
 # Simple JWT defaults (tune lifetime to needs)
 from datetime import timedelta
@@ -156,36 +172,10 @@ SIMPLE_JWT = {
 }
 
 
-# Allauth configuration (basic)
-# Use ACCOUNT_AUTHENTICATION_METHOD to control how users authenticate.
-# 'username_email' allows signing in with either username or email.
-ACCOUNT_LOGIN_METHODS = {'username', 'email'}
-
-# Newer allauth/dj-rest-auth use SIGNUP_FIELDS to declare which fields are
-# present on signup and whether they're required. This replaces older
-# ACCOUNT_SIGNUP_FIELDS / USERNAME_REQUIRED / EMAIL_REQUIRED flags.
-SIGNUP_FIELDS = {
-    'username': {'required': True},
-    'email': {'required': True},
-    'password1': {'required': True},
-    'password2': {'required': True},
-}
-
-# Compatibility shim: some third-party packages still read the older
-# allauth app_settings attributes USERNAME_REQUIRED and EMAIL_REQUIRED.
-# Set them here at startup from SIGNUP_FIELDS so older code continues to
-# work until upstream packages are updated.
-try:
-    # import here (allauth is in INSTALLED_APPS) and set attributes
-    from allauth.account import app_settings as _allauth_app_settings
-
-    # Only set if attributes exist or as new attributes to be safe.
-    _allauth_app_settings.USERNAME_REQUIRED = SIGNUP_FIELDS.get('username', {}).get('required', False)
-    _allauth_app_settings.EMAIL_REQUIRED = SIGNUP_FIELDS.get('email', {}).get('required', False)
-except Exception:
-    # If allauth isn't importable for any reason at settings import time,
-    # skip the shim — Django will error later with a clearer message.
-    pass
+# Allauth configuration
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 
 SOCIALACCOUNT_PROVIDERS = {
