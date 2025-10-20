@@ -102,6 +102,8 @@ CACHES = {
     }
 }
 
+# Rate limiting configuration
+RATELIMIT_VIEW = 'connectly_backend.views.ratelimited_error'  # custom 429 handler
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
