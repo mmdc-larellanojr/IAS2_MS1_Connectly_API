@@ -7,6 +7,7 @@ from dj_rest_auth.views import (
     PasswordResetView, UserDetailsView,
 )
 from .auth_views import RateLimitedLoginView
+from .admin import admin_site
 
 
 # Define the auth URLs manually to apply robust ratelimit to the login view
@@ -21,7 +22,7 @@ auth_urlpatterns = [
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/api/', permanent=False)),
-    path('admin/', admin.site.urls),
+    path('admin/', admin_site.urls),  # Use rate-limited admin site
     path('api/auth/', include(auth_urlpatterns)),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
     path('api/', include('posts.urls')),  # our posts/newsfeed endpoints
