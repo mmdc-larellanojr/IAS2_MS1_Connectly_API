@@ -3,17 +3,15 @@ from django.urls import path, include
 from django.views.generic.base import RedirectView
 from django_ratelimit.decorators import ratelimit
 from dj_rest_auth.views import (
-    LoginView, LogoutView, PasswordChangeView, PasswordResetConfirmView,
+    LogoutView, PasswordChangeView, PasswordResetConfirmView,
     PasswordResetView, UserDetailsView,
 )
+from .auth_views import RateLimitedLoginView
 
-# Define the auth URLs manually to apply ratelimit to the login view
+
+# Define the auth URLs manually to apply robust ratelimit to the login view
 auth_urlpatterns = [
-    path(
-        'login/',
-        ratelimit(key='post:login', rate='5/m', method='POST', block=True)(LoginView.as_view()),
-        name='rest_login'
-    ),
+    path('login/', RateLimitedLoginView.as_view(), name='rest_login'),
     path('logout/', LogoutView.as_view(), name='rest_logout'),
     path('user/', UserDetailsView.as_view(), name='rest_user_details'),
     path('password/change/', PasswordChangeView.as_view(), name='rest_password_change'),
